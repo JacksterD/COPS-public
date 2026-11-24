@@ -143,11 +143,13 @@ data_qcovid_smoking_demographics <- gp_demographics %>%
   mutate(q_covid = 1) %>%
   retype(eave_ur6, eave_ur8)
 
+# Q_DIAG_DIABETES_1 / _2 are yes/no flags (roughly matching Type 1 / Type 2 prevalence).
+# The March 2020 file stores "no" as 0; the Jan 2021 file stores it as NA.
+# Turn NA into 0 and keep existing 0/1 values. The previous version set
+# every non-missing value, including 0, to 1.
 data_qcovid_smoking_demographics <- data_qcovid_smoking_demographics %>%
-  mutate(q_diag_diabetes_1 = case_when(is.na(q_diag_diabetes_1) ~ 0,
-                                       T ~ 1)) %>%
-  mutate(q_diag_diabetes_2 = case_when(is.na(q_diag_diabetes_2) ~ 0,
-                                       T ~ 1))
+  mutate(q_diag_diabetes_1 = replace_na(as.numeric(q_diag_diabetes_1), 0),
+         q_diag_diabetes_2 = replace_na(as.numeric(q_diag_diabetes_2), 0))
 
 write_rds(data_qcovid_smoking_demographics, paste0(folder_temp_data, "qcovid.rds"), compress = "gz")
 
